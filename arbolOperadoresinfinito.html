@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Árbol de Operadores Matemáticos</title>
+    <style>
+        /* General */
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            background: #101010;
+            color: #f0f0f0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Fondo animado con degradado dinámico */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #0f2027, #2c5364);
+            animation: backgroundAnimation 12s infinite alternate;
+            z-index: -2;
+        }
+
+        @keyframes backgroundAnimation {
+            0% {
+                background: linear-gradient(135deg, #1a1a2e, #0f2027, #2c5364);
+            }
+
+            50% {
+                background: linear-gradient(135deg, #101820, #3a6073, #16222a);
+            }
+
+            100% {
+                background: linear-gradient(135deg, #1a1a2e, #0f2027, #2c5364);
+            }
+        }
+
+        /* Burbuja dinámica */
+        .bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background: rgba(72, 198, 239, 0.15);
+            border-radius: 50%;
+            animation: rise 10s infinite ease-in-out;
+            box-shadow: 0 4px 12px rgba(72, 198, 239, 0.3);
+        }
+
+        .bubble:nth-child(2n) {
+            animation-delay: 2s;
+            background: rgba(111, 134, 214, 0.2);
+        }
+
+        .bubble:nth-child(3n) {
+            animation-delay: 4s;
+            background: rgba(255, 198, 0, 0.2);
+        }
+
+        .bubble:nth-child(4n) {
+            animation-delay: 6s;
+            background: rgba(255, 153, 102, 0.2);
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-150vh) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Título */
+        h1 {
+            font-size: 48px;
+            color: #00ffc6;
+            text-align: center;
+            text-transform: uppercase;
+            margin: 20px 0;
+            letter-spacing: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 255, 198, 0.6);
+            animation: titleGlow 3s infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 255, 198, 0.6);
+            }
+
+            100% {
+                text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 255, 198, 0.8);
+            }
+        }
+
+        /* Contenedor de entrada */
+        .input-container {
+            background: rgba(18, 18, 28, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+            max-width: 400px;
+            margin: 20px auto;
+            text-align: center;
+            border: 1px solid #333;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .input-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 255, 198, 0.5);
+        }
+
+        input,
+        button {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            margin: 10px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input {
+            background: #1e1e2f;
+            color: #00ffc6;
+            width: calc(100% - 40px);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        input:focus {
+            box-shadow: 0 0 10px #00ffc6, inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        button {
+            background: linear-gradient(135deg, #48c6ef, #6f86d6);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0, 255, 198, 0.5);
+            border: 1px solid #333;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #6f86d6, #00ffc6);
+            box-shadow: 0 6px 12px rgba(0, 255, 198, 0.7);
+            transform: translateY(-2px);
+        }
+
+        /* Lienzo */
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #00ffc6;
+            border-radius: 10px;
+            background: #1a1a2e;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
+            animation: canvasGlow 5s infinite alternate;
+        }
+
+        @keyframes canvasGlow {
+            0% {
+                box-shadow: 0 10px 20px rgba(0, 255, 198, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 15px 30px rgba(0, 255, 198, 0.6);
+            }
+        }
+
+        /* Medios Responsivos */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 30px;
+            }
+
+            input,
+            button {
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            .input-container {
+                max-width: 300px;
+            }
+
+            canvas {
+                width: 95%;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            input,
+            button {
+                font-size: 12px;
+            }
+
+            canvas {
+                width: 100%;
+            }
+        }
+
+        /* Estilo general */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        .menu-button {
+            background: linear-gradient(135deg, #48c6ef, #6f86d6);
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        .menu-button:hover {
+            background: linear-gradient(135deg, #6f86d6, #00ffc6);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(18, 18, 28, 0.95);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            text-align: left;
+            overflow: hidden;
+            animation: dropdownFade 0.3s ease-in-out;
+        }
+
+        .menu-dropdown.active {
+            display: block;
+            animation: dropdownSlideIn 0.3s ease-in-out;
+        }
+
+        .menu-dropdown a {
+            display: block;
+            color: #00ffc6;
+            text-decoration: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .menu-dropdown a:hover {
+            background: rgba(72, 198, 239, 0.2);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* Animaciones */
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes dropdownSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>♾️Árbol de Operadores Matemáticos UNIVERSAL♾️</h1>
+    <div class="input-container">
+        <input type="text" id="expressionInput" placeholder="Ingresa una expresión matemática (ej: A+B*C)">
+        <button onclick="buildTree()">Generar Árbol</button>
+        <button onclick="clearTree()">Limpiar</button>
+    </div>
+    <div class="bubbles">
+        <!-- Generar múltiples burbujas para el fondo -->
+        <div class="bubble" style="left: 10%; width: 50px; height: 50px;"></div>
+        <div class="bubble" style="left: 30%; width: 40px; height: 40px;"></div>
+        <div class="bubble" style="left: 50%; width: 60px; height: 60px;"></div>
+        <div class="bubble" style="left: 70%; width: 30px; height: 30px;"></div>
+        <div class="bubble" style="left: 90%; width: 50px; height: 50px;"></div>
+    </div>
+    <div class="hamburger-menu">
+        <button class="menu-button" onclick="toggleMenu()">☰</button>
+        <div class="menu-dropdown" id="menuDropdown">
+            <a href="index.html" >INICIO</a>
+            <a href="arbolDeOperadores.html" >ARBOL DE OPERADORES</a>
+        </div>
+    </div>
+
+    <canvas id="treeCanvas" width="1200" height="1200"></canvas>
+    <script>
+
+        function toggleMenu() {
+            const menuDropdown = document.getElementById("menuDropdown");
+            menuDropdown.classList.toggle("active");
+        }
+
+        const canvas = document.getElementById("treeCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let draggedNode = null;
+
+        canvas.addEventListener("mousedown", (e) => {
+            const { x, y } = getCanvasCoordinates(e);
+            draggedNode = findNodeUnderCursor(tree.root, x, y);
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (draggedNode) {
+                const { x, y } = getCanvasCoordinates(e);
+                draggedNode.x = x;
+                draggedNode.y = y;
+                updateTree();
+            }
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            draggedNode = null;
+        });
+
+        canvas.addEventListener("touchstart", (e) => {
+            const touch = e.touches[0];
+            const { x, y } = getCanvasCoordinates(touch);
+            draggedNode = findNodeUnderCursor(tree.root, x, y);
+        });
+
+        canvas.addEventListener("touchmove", (e) => {
+            if (draggedNode) {
+                const touch = e.touches[0];
+                const { x, y } = getCanvasCoordinates(touch);
+                draggedNode.x = x;
+                draggedNode.y = y;
+                updateTree();
+            }
+        });
+
+        canvas.addEventListener("touchend", () => {
+            draggedNode = null;
+        });
+
+        class TreeNode {
+            constructor(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+                this.x = null;
+                this.y = null;
+            }
+        }
+
+        class ExpressionTree {
+            constructor() {
+                this.root = null;
+            }
+
+            buildFromExpression(expression) {
+                const tokens = this.tokenize(expression);
+                const postfix = this.toPostfix(tokens);
+                this.root = this.buildTreeFromPostfix(postfix);
+                this.positionNodes(this.root, canvas.width / 2, 50);
+            }
+
+            tokenize(expression) {
+                const regex = /([a-zA-Z_][a-zA-Z0-9_]*|\d+\.?\d*|[+\-*/^(),])/g;
+                return expression.match(regex);
+            }
+
+            toPostfix(tokens) {
+                const precedence = {
+                    '+': 1,
+                    '-': 1,
+                    '*': 2,
+                    '/': 2,
+                    '^': 3
+                };
+                const output = [];
+                const operators = [];
+
+                tokens.forEach(token => {
+                    if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(token) || /^\d+\.?\d*$/.test(token)) {
+                        output.push(token);
+                    } else if (token === '(') {
+                        operators.push(token);
+                    } else if (token === ')') {
+                        while (operators.length && operators[operators.length - 1] !== '(') {
+                            output.push(operators.pop());
+                        }
+                        operators.pop();
+                    } else {
+                        while (
+                            operators.length &&
+                            precedence[operators[operators.length - 1]] >= precedence[token]
+                        ) {
+                            output.push(operators.pop());
+                        }
+                        operators.push(token);
+                    }
+                });
+
+                while (operators.length) {
+                    output.push(operators.pop());
+                }
+
+                return output;
+            }
+
+            buildTreeFromPostfix(postfix) {
+                const stack = [];
+                postfix.forEach(token => {
+                    if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(token) || /^\d+\.?\d*$/.test(token)) {
+                        stack.push(new TreeNode(token));
+                    } else {
+                        const node = new TreeNode(token);
+                        if (stack.length) node.right = stack.pop();
+                        if (stack.length) node.left = stack.pop();
+                        stack.push(node);
+                    }
+                });
+                return stack.pop();
+            }
+
+            positionNodes(node, x, y, level = 1) {
+                if (!node) return;
+                const horizontalSpacing = 400 / Math.pow(2, level);
+                const verticalSpacing = 80;
+                node.x = x;
+                node.y = y;
+                this.positionNodes(node.left, x - horizontalSpacing, y + verticalSpacing, level + 1);
+                this.positionNodes(node.right, x + horizontalSpacing, y + verticalSpacing, level + 1);
+            }
+
+            traverseAndDraw(ctx, node) {
+                if (!node) return;
+                if (node.left) this.drawEdge(node.x, node.y, node.left.x, node.left.y, true); // Izquierda (azul)
+                if (node.right) this.drawEdge(node.x, node.y, node.right.x, node.right.y, false); // Derecha (rojo)
+                this.drawNode(node);
+                this.traverseAndDraw(ctx, node.left);
+                this.traverseAndDraw(ctx, node.right);
+            }
+
+            drawEdge(x1, y1, x2, y2, isLeft) {
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+
+                // Azul para conexiones a la izquierda, rojo para la derecha
+                ctx.strokeStyle = isLeft ? "#3385FF" : "#FF3333";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            drawNode(node) {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 30, 0, 2 * Math.PI);
+
+                if (!node.left && !node.right) {
+                    ctx.fillStyle = "#33FF57"; // Verde para hojas
+                } else if (node.parent === null) {
+                    ctx.fillStyle = "#FF5733"; // Naranja para la raíz
+                } else {
+                    ctx.fillStyle = "#3385FF"; // Azul para ramas
+                }
+
+                ctx.fill();
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = "black";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.font = "bold 16px Arial";
+                ctx.fillText(node.value, node.x, node.y);
+            }
+        }
+
+        const tree = new ExpressionTree();
+
+        function buildTree() {
+            const expression = document.getElementById("expressionInput").value.trim();
+            if (!expression) {
+                alert("Por favor, ingresa una expresión.");
+                return;
+            }
+
+            tree.buildFromExpression(expression);
+            updateTree();
+        }
+
+        function updateTree() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            tree.traverseAndDraw(ctx, tree.root);
+        }
+
+        function clearTree() {
+            tree.root = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("expressionInput").value = "";
+        }
+
+        function getCanvasCoordinates(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+        }
+
+        function findNodeUnderCursor(node, x, y) {
+            if (!node) return null;
+            const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+            if (distance <= 30) return node;
+            return findNodeUnderCursor(node.left, x, y) || findNodeUnderCursor(node.right, x, y);
+        }
+    </script>
+
+</body>
+
+</html>
